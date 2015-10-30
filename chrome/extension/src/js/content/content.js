@@ -130,6 +130,9 @@
 
 function mainSlowpoke(window, $) {
 
+    var gracePeriod = 10,//1 * 60,  // 1 minute
+        pendingSaveTimeout;
+
     // FIXME: remove stub from textarea
     var commentForm = '<textarea autocomplete="off" class="messagebox slowpoke-comment" style="width: 98%;" rows="10" wrap="SOFT" name="UpdateContent" id="UpdateContent">' +
         'On Fri Oct 30 15:39:55 2015, tzaripov wrote:\n' +
@@ -140,10 +143,12 @@ function mainSlowpoke(window, $) {
         '</textarea>';
 
     var saveBtn = '&nbsp;[<a class="slowpoke-save-link">Save</a>]&nbsp;',
-        editBtn  = '&nbsp;[<a class="slowpoke-edit-link">Edit</a>]&nbsp;';
+        editBtn  = '&nbsp;[<a class="slowpoke-edit-link">Edit</a>]&nbsp;',
+        normalBtns = '[<a href="/rt/Ticket/Update.html?id=340824&amp;QuoteTransaction=5423251&amp;Action=Respond" class="reply-link">Reply</a>]&nbsp;[<a href="/rt/Ticket/Update.html?id=340824&amp;QuoteTransaction=5423251&amp;Action=Comment" class="comment-link">Comment</a>]';
 
     function replaceCommentButtons(commentForm, saveBtn, editBtn){
         var commentButtons = $('.comment-link');
+
         commentButtons.click(function(event){
             event.preventDefault();
             event.stopPropagation();
@@ -165,10 +170,12 @@ function mainSlowpoke(window, $) {
 
             var comment = $(event.target).closest(".ticket-transaction.message"),
                 commentText = $(".slowpoke-comment", comment).text(),
-                processedCommentText = commentText.replace(/\n/g, "<br>");
+                processedCommentText = commentText ? commentText.replace(/\n/g, "<br>") : '';
 
             $(".messagebody", comment).html('<div class="message-stanza slowpoke-message">' + processedCommentText + "</div>");
             $(".metadata .actions", comment).html(editBtn);
+
+            pendingSaveTimeout = setTimeout(saveComment, gracePeriod * 1000);
         });
 
         $(".ticket-transaction.message .slowpoke-edit-link").live('click', function() {
@@ -177,12 +184,27 @@ function mainSlowpoke(window, $) {
 
             var comment = $(event.target).closest(".ticket-transaction.message"),
                 commentText = $(".slowpoke-message", comment).html(),
-                processedMessageText = commentText.replace(/<br>/g, "\n");
+                processedMessageText = commentText ? commentText.replace(/<br>/g, "\n") : '';
+
 
             $(".messagebody", comment).html(commentForm);
             $("textarea", comment).text(processedMessageText);
             $(".metadata .actions", comment).html(saveBtn);
+
+            if (pendingSaveTimeout) {
+                clearTimeout(pendingSaveTimeout);
+                pendingSaveTimeout = undefined;
+                console.log('pending save canceled');
+            }
         });
+
+        function saveComment() {
+            var comment = $(".slowpoke-message").closest(".ticket-transaction.message");
+
+            $(".metadata .actions", comment).html(normalBtns);
+
+            console.log('saved');
+        }
     }
 
     $(document).ready(function () {
