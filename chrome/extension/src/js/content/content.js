@@ -129,7 +129,9 @@
 /* Slowpoke comments */
 
 function mainSlowpoke(window, $) {
-    var commentForm = '<textarea autocomplete="off" class="messagebox" style="width: 98%;" rows="10" wrap="SOFT" name="UpdateContent" id="UpdateContent">' +
+
+    // FIXME: remove stub from textarea
+    var commentForm = '<textarea autocomplete="off" class="messagebox slowpoke-comment" style="width: 98%;" rows="10" wrap="SOFT" name="UpdateContent" id="UpdateContent">' +
         'On Fri Oct 30 15:39:55 2015, tzaripov wrote:\n' +
         '> cause i need to test here\n' +
         '> http://example.com\n' +
@@ -137,32 +139,53 @@ function mainSlowpoke(window, $) {
         '> bold as a highlander\n' +
         '</textarea>';
 
-    var actionBtns = '<span class="actions">' +
-        '&nbsp;' +
-        '[<a class="comment-link">Save</a>]' +
-        '</span>';
+    var saveBtn = '&nbsp;[<a class="slowpoke-save-link">Save</a>]&nbsp;',
+        editBtn  = '&nbsp;[<a class="slowpoke-edit-link">Edit</a>]&nbsp;';
 
-
-    function replaceCommentButtons(commentForm, actionBtns){
+    function replaceCommentButtons(commentForm, saveBtn, editBtn){
         var commentButtons = $('.comment-link');
         commentButtons.click(function(event){
             event.preventDefault();
             event.stopPropagation();
-            console.log(commentButtons, arguments);
 
             var historyContainer = $(event.target).closest("#ticket-history"),
                 topHistoryElem = $('div ', historyContainer)[0],
                 commentClone = $(event.target).closest(".ticket-transaction.message").clone();
 
             $(".downloadattachment", commentClone).remove();
-            $(".metadata .actions", commentClone).html(actionBtns);
+            $(".metadata .actions", commentClone).html(saveBtn);
             $(".messagebody", commentClone).html(commentForm);
             $(commentClone).prependTo(topHistoryElem);
+
+        });
+
+        $(".ticket-transaction.message .slowpoke-save-link").live('click', function() {
+            event.preventDefault();
+            event.stopPropagation();
+            var comment = $(event.target).closest(".ticket-transaction.message"),
+                commentText = $(".slowpoke-comment", comment).text(),
+                processedCommentText = commentText.replace(/\n/g, "<br>");
+
+            $(".messagebody", comment).html('<div class="message-stanza slowpoke-message">' + processedCommentText + "</div>");
+            $(".metadata .actions", comment).html(editBtn);
+        });
+
+        $(".ticket-transaction.message .slowpoke-edit-link").live('click', function() {
+            event.preventDefault();
+            event.stopPropagation()
+            ;
+            var comment = $(event.target).closest(".ticket-transaction.message"),
+                commentText = $(".slowpoke-message", comment).html(),
+                processedMessageText = commentText.replace(/<br>/g, "\n");
+
+            $(".messagebody", comment).html(commentForm);
+            $("textarea", comment).text(processedMessageText);
+            $(".metadata .actions", comment).html(editBtn);
         });
     }
 
     $(document).ready(function () {
-        replaceCommentButtons(commentForm, actionBtns);
+        replaceCommentButtons(commentForm, saveBtn, editBtn);
     });
 }
 
