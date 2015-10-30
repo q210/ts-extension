@@ -124,3 +124,32 @@
     }
 
 })(window);
+
+
+addJS_Node(null, null, function (window, $){
+    function replaceCommentButtons(){
+        var commentButtons = $('.comment-link');
+        commentButtons.click(function(event){
+            event.preventDefault();
+            event.stopPropagation();
+            console.log(commentButtons, arguments);
+        });
+    }
+    $(document).ready(
+        replaceCommentButtons
+    )
+});
+
+
+// code from http://stackoverflow.com/a/9871235/1351314
+function addJS_Node (text, s_URL, funcToRun) {
+    var D                                   = document;
+    var scriptNode                          = D.createElement ('script');
+    scriptNode.type                         = "text/javascript";
+    if (text)       scriptNode.textContent  = text;
+    if (s_URL)      scriptNode.src          = s_URL;
+    if (funcToRun)  scriptNode.textContent  = '(' + funcToRun.toString() + ')(window, jQuery)';
+
+    var targ = D.getElementsByTagName ('head')[0] || D.body || D.documentElement;
+    targ.appendChild (scriptNode);
+}
