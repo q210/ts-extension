@@ -126,19 +126,47 @@
 })(window);
 
 
-addJS_Node(null, null, function (window, $){
-    function replaceCommentButtons(){
+/* Slowpoke comments */
+
+function mainSlowpoke(window, $) {
+    var commentForm = '<textarea autocomplete="off" class="messagebox" style="width: 98%;" rows="10" wrap="SOFT" name="UpdateContent" id="UpdateContent">' +
+        'On Fri Oct 30 15:39:55 2015, tzaripov wrote:\n' +
+        '> cause i need to test here\n' +
+        '> http://example.com\n' +
+        '>\n' +
+        '> bold as a highlander\n' +
+        '</textarea>';
+
+    var actionBtns = '<span class="actions">' +
+        '&nbsp;' +
+        '[<a class="comment-link">Save</a>]' +
+        '</span>';
+
+
+    function replaceCommentButtons(commentForm, actionBtns){
         var commentButtons = $('.comment-link');
         commentButtons.click(function(event){
             event.preventDefault();
             event.stopPropagation();
             console.log(commentButtons, arguments);
+
+            var historyContainer = $(event.target).closest("#ticket-history"),
+                topHistoryElem = $('div ', historyContainer)[0],
+                commentClone = $(event.target).closest(".ticket-transaction.message").clone();
+
+            $(".downloadattachment", commentClone).remove();
+            $(".metadata .actions", commentClone).html(actionBtns);
+            $(".messagebody", commentClone).html(commentForm);
+            $(commentClone).prependTo(topHistoryElem);
         });
     }
-    $(document).ready(
-        replaceCommentButtons
-    )
-});
+
+    $(document).ready(function () {
+        replaceCommentButtons(commentForm, actionBtns);
+    });
+}
+
+addJS_Node(null, null, mainSlowpoke);
 
 
 // code from http://stackoverflow.com/a/9871235/1351314
