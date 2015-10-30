@@ -131,7 +131,8 @@
 function mainSlowpoke(window, $) {
 
     var gracePeriod = 10,//1 * 60,  // 1 minute
-        pendingSaveTimeout;
+        pendingSaveTimeout,
+        textToSend;
 
     // FIXME: remove stub from textarea
     var commentForm = '<textarea autocomplete="off" class="messagebox slowpoke-comment" style="width: 98%;" rows="10" wrap="SOFT" name="UpdateContent" id="UpdateContent">' +
@@ -144,7 +145,8 @@ function mainSlowpoke(window, $) {
 
     var saveBtn = '&nbsp;[<a class="slowpoke-save-link">Save</a>]&nbsp;',
         editBtn  = '&nbsp;[<a class="slowpoke-edit-link">Edit</a>]&nbsp;',
-        normalBtns = '[<a href="/rt/Ticket/Update.html?id=340824&amp;QuoteTransaction=5423251&amp;Action=Respond" class="reply-link">Reply</a>]&nbsp;[<a href="/rt/Ticket/Update.html?id=340824&amp;QuoteTransaction=5423251&amp;Action=Comment" class="comment-link">Comment</a>]';
+        normalBtns = undefined;
+        //'[<a href="/rt/Ticket/Update.html?id=340824&amp;QuoteTransaction=5423251&amp;Action=Respond" class="reply-link">Reply</a>]&nbsp;[<a href="/rt/Ticket/Update.html?id=340824&amp;QuoteTransaction=5423251&amp;Action=Comment" class="comment-link">Comment</a>]';
 
     function replaceCommentButtons(commentForm, saveBtn, editBtn){
         var commentButtons = $('.comment-link');
@@ -158,6 +160,7 @@ function mainSlowpoke(window, $) {
                 commentClone = $(event.target).closest(".ticket-transaction.message").clone();
 
             $(".downloadattachment", commentClone).remove();
+            normalBtns = $(".metadata .actions", commentClone).html();
             $(".metadata .actions", commentClone).html(saveBtn);
             $(".messagebody", commentClone).html(commentForm);
             $(commentClone).prependTo(topHistoryElem);
@@ -175,7 +178,9 @@ function mainSlowpoke(window, $) {
             $(".messagebody", comment).html('<div class="message-stanza slowpoke-message">' + processedCommentText + "</div>");
             $(".metadata .actions", comment).html(editBtn);
 
+            textToSend = commentText;
             pendingSaveTimeout = setTimeout(saveComment, gracePeriod * 1000);
+            console.log('added pending save');
         });
 
         $(".ticket-transaction.message .slowpoke-edit-link").live('click', function() {
@@ -203,7 +208,62 @@ function mainSlowpoke(window, $) {
 
             $(".metadata .actions", comment).html(normalBtns);
 
-            console.log('saved');
+            //$.post(
+            //    'https://www.iponweb.net/rt/Ticket/Update.html',
+            //    {
+            //        'QuoteTransaction': commentQuoteTransaction,
+            //        'DefaultStatus': 'new',
+            //        'Action': 'Comment',
+            //        'id': ticketId,
+            //        'UpdateType': 'private',
+            //        'Status': '',
+            //        'Owner': 'Nobody',
+            //        'UpdateTimeWorked': null,
+            //        'UpdateTimeWorked-TimeUnits': 'minutes',
+            //        'UpdateCc': '',
+            //        'UpdateBcc': '',
+            //        'UpdateIgnoreAddressCheckboxes': 0,
+            //        'Sign': 0,
+            //        'Encrypt': 0,
+            //        'UpdateSubject': ticketSubject,
+            //        (ticketId + "-RefersTo"): '',
+            //        'Articles_Content': '',
+            //        'Articles-Include-Article-Named': '',
+            //        'UpdateContent': textToSend,
+            //        'UpdateAttach': 0,
+            //        'SubmitTicket': 'Update Ticket',
+            //    }
+            //)
+
+            $.ajax({
+                url: 'https://www.iponweb.net/rt/Ticket/Update.html',
+                data: {
+                    'QuoteTransaction': 5424435,
+                    'DefaultStatus': 'new',
+                    'Action': 'Comment',
+                    'id': 340824,
+                    'UpdateType': 'private',
+                    'Status': '',
+                    'Owner': 'Nobody',
+                    'UpdateTimeWorked': null,
+                    'UpdateTimeWorked-TimeUnits': 'minutes',
+                    'UpdateCc': '',
+                    'UpdateBcc': '',
+                    'UpdateIgnoreAddressCheckboxes': 0,
+                    'Sign': 0,
+                    'Encrypt': 0,
+                    'UpdateSubject': '',
+                    '340824-RefersTo': '',
+                    'Articles_Content': '',
+                    'Articles-Include-Article-Named': '',
+                    'UpdateContent': textToSend,
+                    'UpdateAttach': 0,
+                    'SubmitTicket': 'Update Ticket',
+                },
+                success: function () {
+                    console.log('saved')
+                }
+            });
         }
     }
 
