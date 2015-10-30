@@ -162,6 +162,7 @@ function mainSlowpoke(window, $) {
         $(".ticket-transaction.message .slowpoke-save-link").live('click', function() {
             event.preventDefault();
             event.stopPropagation();
+
             var comment = $(event.target).closest(".ticket-transaction.message"),
                 commentText = $(".slowpoke-comment", comment).text(),
                 processedCommentText = commentText.replace(/\n/g, "<br>");
@@ -172,15 +173,15 @@ function mainSlowpoke(window, $) {
 
         $(".ticket-transaction.message .slowpoke-edit-link").live('click', function() {
             event.preventDefault();
-            event.stopPropagation()
-            ;
+            event.stopPropagation();
+
             var comment = $(event.target).closest(".ticket-transaction.message"),
                 commentText = $(".slowpoke-message", comment).html(),
                 processedMessageText = commentText.replace(/<br>/g, "\n");
 
             $(".messagebody", comment).html(commentForm);
             $("textarea", comment).text(processedMessageText);
-            $(".metadata .actions", comment).html(editBtn);
+            $(".metadata .actions", comment).html(saveBtn);
         });
     }
 
